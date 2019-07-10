@@ -1,0 +1,20 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-react"
+  ],
+  "jsRules": {},
+  "rules": {
+    "class-name": true,
+    "no-empty": true,
+    "interface-name": false,
+    "no-console": false,
+    "max-classes-per-file": false,
+    "quotemark": [true, "single"],
+    "indent":[true, "spaces", 2],
+    "no-consecutive-blank-lines": [ true, 1 ],
+    "align": [true, "parameters", "statements"]
+  },
+  "rulesDirectory": []
+}

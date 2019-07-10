@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+node_modules/
+*.iml
+.awcache
+dist/
+lib/
+npm-debug.log
+yarn-error.log

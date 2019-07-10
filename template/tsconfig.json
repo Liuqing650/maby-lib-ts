@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "allowSyntheticDefaultImports": true,
+    "removeComments": false,
+    "outDir": "./dist/",
+    "rootDirs": ["./src"],
+    "baseUrl": "./src",
+    "strict": true,
+    "importHelpers": true,
+    "isolatedModules": false,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["esnext", "dom"],
+    "target": "es5",
+    "jsx": "react",
+    "plugins": [ { "name": "css-module-types" } ],
+    "skipLibCheck": true,
+    "typeRoots": ["node", "node_modules/@types", "./typings"]
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    "useBabel":true,
+    "useCache":true,
+    "emitRequireType":false,
+    "babelCore": "@babel/core",
+    "reportFiles": [
+      "./src/**/*.{ts,tsx}"
+    ]
+  }
+}
