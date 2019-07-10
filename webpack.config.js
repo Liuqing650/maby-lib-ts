@@ -8,7 +8,7 @@ module.exports = function(env = process.env) {
   const PREVIEW = env.PREVIEW === 'true';
   const configPath = './lib/createWebpackConfig';
   const createWebpackConfig = require(configPath);
-  const { webpackPlugins, webpackLoaders, outFileName, entryName, optimization, libraryName, library, resolve } = createWebpackConfig(env);
+  const { webpackPlugins, webpackLoaders, outFileName, entryName, optimization, libraryName, library, resolve, externals } = createWebpackConfig(env);
   const outputPath = PREVIEW ? path.join(process.cwd(), 'preview') : path.join(process.cwd(), 'dist');
   
   console.log(chalk.cyanBright(isDev ? `development: ${libraryName} is starting...` : `production: ${libraryName}${env.MINI === 'true' ? '.min' : ''} is building.`));
@@ -48,6 +48,7 @@ module.exports = function(env = process.env) {
     module: {
       rules: webpackLoaders
     },
-    resolve: resolve
+    resolve: resolve,
+    externals: externals,
   }
 };

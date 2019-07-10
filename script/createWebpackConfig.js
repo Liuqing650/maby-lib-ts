@@ -3,6 +3,7 @@ const packageInfo = require('./getPackage');
 const getEntry = require('./getEntry');
 const getOutFilename = require('./getOutFilename');
 const getOptimization = require('./getOptimization');
+const getExternals = require('./getExternals');
 const getPlugins = require('./webpackPlugins');
 const getLoaders = require('./webpackLoaders');
 const getResolve = require('./webpackResolve.js');
@@ -95,6 +96,9 @@ module.exports = function(env) {
   const resolve = getResolve({
     resolve: mabycli.resolve || null
   });
+  const externals = getExternals({
+    externals: mabycli.externals || null,
+  });
   return {
     webpackPlugins,
     webpackLoaders,
@@ -104,5 +108,6 @@ module.exports = function(env) {
     libraryName,
     library,
     resolve,
+    externals,
   };
 };
