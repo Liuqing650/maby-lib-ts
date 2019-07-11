@@ -84,12 +84,12 @@ function babelify(js, modules) {
     .pipe(through2.obj(function z(file, encoding, next) {
       this.push(file.clone());
       // 查找包含style样式文件夹，替换掉原来引入的less为css
-      if (file.path.match(/\/style\/index\.js/)) {
+      if (file.path.match(/\/style\/index\.(js|ts|jsx|tsx)/)) {
         const content = file.contents.toString(encoding);
         file.contents = Buffer.from(content
           .replace(/\/style\/?'/g, '/style/css\'')
           .replace(/\.less/g, '.css'));
-        file.path = file.path.replace(/index\.js/, 'index.js');
+        file.path = file.path.replace(/index\.(js|ts|jsx|tsx)/, 'index.js');
         this.push(file);
         next();
       } else {
@@ -120,7 +120,9 @@ function compile(modules) {
   const assets = gulp.src(['src/**/*.@(png|svg)']).pipe(gulp.dest(libDir));
   const source = [
     'src/**/*.js',
-    'src/**/*.jsx'
+    'src/**/*.jsx',
+    'src/**/*.ts',
+    'src/**/*.tsx',
   ];
   const jsResult = gulp.src(source);
   const tsFilesStream = babelify(jsResult, modules);
