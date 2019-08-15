@@ -46,7 +46,7 @@ const webpackPlugins = ({
           beautify: true, // 最紧凑的输出
           comments: true, // 删除所有的注释
           compress: {
-            warnings: false,
+            // warnings: false,
             drop_console: true, // 删除所有的 `console` 语句
             collapse_vars: true,
             reduce_vars: true, // 提取出出现多次但是没有定义成变量去引用的静态值

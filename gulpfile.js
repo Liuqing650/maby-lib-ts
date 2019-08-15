@@ -3,14 +3,19 @@ const rimraf = require('rimraf');
 const path = require('path');
 const merge2 = require('merge2');
 const through2 = require('through2');
+const argv = require('minimist')(process.argv.slice(2));
 const webpack = require('webpack');
+const ts = require('gulp-typescript');
 const gulp = require('gulp');
 const babel = require('gulp-babel');
+const sourcemaps = require('gulp-sourcemaps');
 const transformLess = require('./lib/transformLess');
 const createWebpackConfig = require('./webpack.config.js');
 const getBabel = require('./lib/getBabel.js');
 const packageInfo = require('./lib/getPackage.js');
+const tsConfig = require('./lib/getTSConfig')();
 
+const tsDefaultReporter = ts.reporter.defaultReporter();
 const cwd = process.cwd();
 
 const { mabycli } = packageInfo;
@@ -28,14 +33,14 @@ function getFolders(dir) {
     });
 }
 
-function buildWebpack(isMini = false) {
+function buildWebpack(isMini = false, done) {
   process.env.MINI = isMini;
   process.env.NODE_ENV = 'production';
   if (!isMini) {
     rimraf.sync(distDir);
   }
   const webpackConfig = createWebpackConfig(process.env);
-  webpack(webpackConfig, (err) => {
+  webpack(webpackConfig, (err, stats) => {
     if (err) {
       console.error(err.stack || err);
       if (err.details) {
@@ -43,6 +48,26 @@ function buildWebpack(isMini = false) {
       }
       return;
     }
+    const info = stats.toJson();
+    if (stats.hasErrors()) {
+      console.error(info.errors);
+    }
+    if (stats.hasWarnings()) {
+      console.warn(info.warnings);
+    }
+
+    const buildInfo = stats.toString({
+      colors: true,
+      children: true,
+      chunks: false,
+      modules: false,
+      chunkModules: false,
+      hash: false,
+      version: false,
+    });
+    console.log(buildInfo);
+    console.log('build 完成...');
+    done(0);
   });
 }
 
@@ -80,7 +105,9 @@ function analyzer() {
 
 function babelify(js, modules) {
   const babelConfig = getBabel();
-  let stream = js.pipe(babel(babelConfig))
+  let stream = js
+    .pipe(sourcemaps.init())
+    .pipe(babel(babelConfig))
     .pipe(through2.obj(function z(file, encoding, next) {
       this.push(file.clone());
       // 查找包含style样式文件夹，替换掉原来引入的less为css
@@ -95,14 +122,17 @@ function babelify(js, modules) {
       } else {
         next();
       }
-    }));
+    }))
+    .pipe(sourcemaps.write('.'));
   return stream.pipe(gulp.dest(libDir));
 }
 
 function compile(modules) {
+  console.log('compile ing...');
   rimraf.sync(deleteLibDir);
   const less = gulp.src(['src/**/*.less'])
     .pipe(through2.obj(function (file, encoding, next) {
+      this.push(file.clone());
       if (file.path.match(/\/style\/index\.less$/)) {
         transformLess(file.path).then((css) => {
           file.contents = Buffer.from(css);
@@ -118,15 +148,36 @@ function compile(modules) {
     }))
     .pipe(gulp.dest(libDir));
   const assets = gulp.src(['src/**/*.@(png|svg)']).pipe(gulp.dest(libDir));
+  let error = 0;
   const source = [
     'src/**/*.js',
     'src/**/*.jsx',
     'src/**/*.ts',
     'src/**/*.tsx',
   ];
-  const jsResult = gulp.src(source);
-  const tsFilesStream = babelify(jsResult, modules);
-  const tsd = jsResult.pipe(gulp.dest(libDir));
+  // const tsResult = gulp.src(source);
+  if (tsConfig.allowJs) {
+    source.unshift('src/**/*.jsx');
+  }
+  const tsResult = gulp.src(source).pipe(
+    ts(tsConfig, {
+      error(e) {
+        tsDefaultReporter.error(e);
+        error = 1;
+      },
+      finish: tsDefaultReporter.finish,
+    })
+  );
+
+  function check() {
+    if (error && !argv['ignore-error']) {
+      process.exit(1);
+    }
+  }
+  tsResult.on('finish', check);
+  tsResult.on('end', check);
+  const tsFilesStream = babelify(tsResult.js, modules);
+  const tsd = tsResult.dts.pipe(gulp.dest(libDir));
   return merge2([less, tsFilesStream, tsd, assets]);
 }
 
@@ -146,10 +197,10 @@ gulp.task('build:mini', (done) => {
   buildWebpack(true, done);
 });
 
-gulp.task('compile', () => {
-  compile();
+gulp.task('compile', (done) => {
+  compile().on('finish', done);
 });
 
-gulp.task('build', ['build:babel', 'build:mini', 'compile']);
+gulp.task('build', gulp.series('build:babel', 'build:mini', 'compile'));
 
-gulp.task('default', ['build:babel', 'build:mini', 'compile']);
+gulp.task('default', gulp.series('build:babel', 'build:mini', 'compile'));

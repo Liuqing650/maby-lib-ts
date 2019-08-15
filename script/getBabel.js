@@ -6,7 +6,13 @@ const parseJSON = require('parse-json-pretty');
 function getBabel() {
   const userBabelrcPath = path.resolve(process.cwd(), '.babelrc');
   if (fs.existsSync(userBabelrcPath)) {
-    const babelConfig = parseJSON(stripJsonComments(fs.readFileSync(userBabelrcPath, 'utf-8')), '.babelrc');
+    var babelConfigText = '{}';
+    try {
+      babelConfigText = stripJsonComments(fs.readFileSync(userBabelrcPath, 'utf-8'))
+    } catch (error) {
+      console.log('babelrc 中的配置不是一个正确的JSON文件', error);
+    }
+    var babelConfig = parseJSON(babelConfigText, '.babelrc');
     return babelConfig;
   }
   return {
