@@ -102,7 +102,7 @@
     "postcss": "^6.0.13",
     "postcss-loader": "^3.0.0",
     "react": "^16.2.0",
-    "react-dev-utils": "^6.0.4",
+    "react-dev-utils": "^11.0.4",
     "react-dom": "^16.2.0",
     "rimraf": "^2.6.2",
     "rucksack-css": "^1.0.2",
